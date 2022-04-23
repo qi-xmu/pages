@@ -1,1 +1,1 @@
-sphinx_book_theme 0.3.2
+sphinx_book_theme
