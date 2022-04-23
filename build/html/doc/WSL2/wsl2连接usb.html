@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>使用WSL2连接USB设备 &mdash; Dacazh 0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="中期报告" href="../%E5%A4%A7%E5%88%9B%E7%9B%B8%E5%85%B3/%E4%B8%AD%E6%9C%9F%E6%8A%A5%E5%91%8A.html" />
+    <link rel="prev" title="学习Rust第一天 Rust语言特点" href="../Rust%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/Rust%E7%AC%AC%E4%B8%80%E5%A4%A9.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Dacazh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">ALL:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../1.%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/Typora%E5%90%8C%E6%AD%A5%E8%AE%A1%E5%88%92.html">Typora同步计划</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1.%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/%E6%B5%8B%E8%AF%95Typora%E5%90%8C%E6%AD%A5Gitee.html">This is a Test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API%E6%90%AD%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%BB%8F%E9%AA%8C/HTTP%28s%29API%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93.html">HTTP(s) API 经验总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API%E6%90%AD%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%BB%8F%E9%AA%8C/README.html">说明</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Flutter/flutter%E6%9E%84%E5%BB%BAwin%E5%BA%94%E7%94%A8.html">Flutter 构建windows应用</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Python%E7%9B%B8%E5%85%B3/Conda.html">Conda使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Rust%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/README.html">说明</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Rust%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/Rust%E7%AC%AC%E4%B8%80%E5%A4%A9.html">学习Rust第一天 Rust语言特点</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">使用WSL2连接USB设备</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">要求</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">安装</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#windowusbipd">第一步 在Window安装usbipd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#wslusbip">第二步 在WSL里安装USBIP 工具和硬件数据库</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">使用方法</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../%E5%A4%A7%E5%88%9B%E7%9B%B8%E5%85%B3/%E4%B8%AD%E6%9C%9F%E6%8A%A5%E5%91%8A.html">中期报告</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%BC%80%E5%8F%91/%E8%93%9D%E7%89%99%E5%BC%80%E5%8F%91.html">小程序开发-蓝牙使用</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../%E6%83%B3%E6%B3%95%E9%9A%8F%E7%AC%94/AR%E5%85%BB%E8%8A%B1.html">AR 养花</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../%E6%83%B3%E6%B3%95%E9%9A%8F%E7%AC%94/%E6%96%B0%E7%9A%842021.html">告别2020，迎接2021</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../%E7%89%A9%E8%81%94%E7%BD%91%E7%9B%B8%E5%85%B3/GY91%28MPU9250%20%2B%20BMP280%29%E6%83%AF%E6%80%A7%E4%BC%A0%E6%84%9F%E5%99%A8%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97_bcpjxgjik1WoVfNY5fbpT8.html">GY91(MPU9250 + BMP280)惯性传感器开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7/GDB%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.html">GDB调试记录</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API搭建和使用经验:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../API%E6%90%AD%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%BB%8F%E9%AA%8C/HTTP%28s%29API%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93.html">HTTP(s) API 经验总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API%E6%90%AD%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%BB%8F%E9%AA%8C/README.html">说明</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">项目计划:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../1.%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/Typora%E5%90%8C%E6%AD%A5%E8%AE%A1%E5%88%92.html">Typora同步计划</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1.%E9%A1%B9%E7%9B%AE%E8%AE%A1%E5%88%92/%E6%B5%8B%E8%AF%95Typora%E5%90%8C%E6%AD%A5Gitee.html">This is a Test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Dacazh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>使用WSL2连接USB设备</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/WSL2/wsl2连接usb.md.txt" rel="nofollow"> 查看页面源码</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wsl2usb">
+<h1>使用WSL2连接USB设备<a class="headerlink" href="#wsl2usb" title="永久链接至标题"></a></h1>
+<p>[toc]</p>
+<p>22.3.19 微软官方文档：<a class="reference external" href="https://docs.microsoft.com/zh-cn/windows/wsl/connect-usb">连接 USB 设备 | Microsoft Docs</a></p>
+<section id="id1">
+<h2>要求<a class="headerlink" href="#id1" title="永久链接至标题"></a></h2>
+<ul class="simple">
+<li><p>运行 Windows 11（内部版本 22000 或更高版本）。 （可提供 Windows 10 支持，请参见下面的注释）</p></li>
+<li><p>Linux 发行版已安装并<a class="reference external" href="https://docs.microsoft.com/zh-cn/windows/wsl/basic-commands#set-wsl-version-to-1-or-2">设置为 WSL 2</a>。</p></li>
+<li><p>运行 <a class="reference external" href="https://docs.microsoft.com/zh-cn/windows/wsl/kernel-release-notes">Linux 内核 5.10.60.1 或更高版本</a>。</p>
+<ul>
+<li><p>如果内核版本较低，可以使用<code class="docutils literal notranslate"><span class="pre">wsl</span> <span class="pre">--update</span></code>进行更新。</p></li>
+</ul>
+</li>
+<li><p><strong>只能在默认WSL中使用（可以手动切换默认WSL）</strong></p></li>
+</ul>
+<p>使用<code class="docutils literal notranslate"><span class="pre">wsl</span> <span class="pre">--status</span></code>查询是否符合条件。</p>
+<p><img alt="image-20220402203010945" src="https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203010945.png" /></p>
+</section>
+<section id="id2">
+<h2>安装<a class="headerlink" href="#id2" title="永久链接至标题"></a></h2>
+<section id="windowusbipd">
+<h3>第一步 在Window安装usbipd<a class="headerlink" href="#windowusbipd" title="永久链接至标题"></a></h3>
+<p>使用<code class="docutils literal notranslate"><span class="pre">winget</span></code>安装，<code class="docutils literal notranslate"><span class="pre">winget</span></code>微软推出的包管理工具，也挺好用的。安装方法：<a class="reference external" href="https://docs.microsoft.com/zh-CN/windows/package-manager/winget/">使用 winget 工具安装和管理应用程序 | Microsoft Docs</a></p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">winget</span> <span class="n">install</span> <span class="p">-</span><span class="n">-interactive</span> <span class="p">-</span><span class="o">-exact</span> <span class="n">dorssel</span><span class="p">.</span><span class="n">usbipd-win</span>
+</pre></div>
+</div>
+<p><em>注意：如果省略<code class="docutils literal notranslate"><span class="pre">--interactive</span></code>可能会立即重启计算机。</em></p>
+</section>
+<section id="wslusbip">
+<h3>第二步 在WSL里安装USBIP 工具和硬件数据库<a class="headerlink" href="#wslusbip" title="永久链接至标题"></a></h3>
+<p>在 Ubuntu 上运行以下命令：<a class="reference external" href="https://github.com/dorssel/usbipd-win/wiki/WSL-support#usbip-client-tools">其他分发可能需要不同的 usbip 客户端包</a>。</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">linux-tools</span><span class="p">-</span><span class="n">5</span><span class="p">.</span><span class="n">4</span><span class="p">.</span><span class="n">0</span><span class="p">-</span><span class="n">77-generic</span> <span class="n">hwdata</span>
+<span class="n">sudo</span> <span class="nb">update-alternatives</span> <span class="p">-</span><span class="n">-install</span> <span class="p">/</span><span class="n">usr</span><span class="p">/</span><span class="n">local</span><span class="p">/</span><span class="n">bin</span><span class="p">/</span><span class="n">usbip</span> <span class="n">usbip</span> <span class="p">/</span><span class="n">usr</span><span class="p">/</span><span class="n">lib</span><span class="p">/</span><span class="n">linux-tools</span><span class="p">/</span><span class="n">5</span><span class="p">.</span><span class="n">4</span><span class="p">.</span><span class="n">0</span><span class="p">-</span><span class="n">77-generic</span><span class="p">/</span><span class="n">usbip</span> <span class="n">20</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id3">
+<h2>使用方法<a class="headerlink" href="#id3" title="永久链接至标题"></a></h2>
+<p>**运行说明：**连接指令需要在管理员条件下运行。</p>
+<ol>
+<li><p>查询所有USB设备</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">usbipd</span> <span class="n">wsl</span> <span class="n">list</span>
+</pre></div>
+</div>
+<p><img alt="image-20220402203247759" src="https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203247759.png" /></p>
+</li>
+<li><p>连接USB设备到<strong>默认WSL</strong></p>
+<p>切换默认WSL使用<code class="docutils literal notranslate"><span class="pre">wsl</span> <span class="pre">--set-default</span> <span class="pre">&lt;Distribution</span> <span class="pre">Name&gt;</span></code>。使用<strong>管理员模式</strong>执行如下指令：</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">usbipd</span> <span class="n">wsl</span> <span class="n">attach</span> <span class="p">-</span><span class="n">-busid</span> <span class="p">&lt;</span><span class="n">BUSID</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">BUSID</span></code>是查询结果的第一列。</p>
+<p><img alt="image-20220402203628235" src="https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203628235.png" /></p>
+<p><img alt="image-20220402203741068" src="https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203741068.png" /></p>
+</li>
+<li><p>断开连接，无需管理员权限。</p>
+<div class="highlight-pow notranslate"><div class="highlight"><pre><span></span>usbipd wsl detach --busid 1-1
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Rust%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/Rust%E7%AC%AC%E4%B8%80%E5%A4%A9.html" class="btn btn-neutral float-left" title="学习Rust第一天 Rust语言特点" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> 上一页</a>
+        <a href="../%E5%A4%A7%E5%88%9B%E7%9B%B8%E5%85%B3/%E4%B8%AD%E6%9C%9F%E6%8A%A5%E5%91%8A.html" class="btn btn-neutral float-right" title="中期报告" accesskey="n" rel="next">下一页 <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2022, Qi.</p>
+  </div>
+
+  利用 <a href="https://www.sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">主题</a>
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

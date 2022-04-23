@@ -1,0 +1,109 @@
+# GY91(MPU9250 + BMP280)惯性传感器开发指南
+
+[toc]
+
+## 参考资料
+
+参考资料说明：
+
+用户手册时针对电路设计者的，一般时芯片的一些电气特性和经典电路，同时，也会说明该芯片的一些测量精度。
+
+寄存器地图是针对驱动开发者的，主要告诉开发者如何使用（控制和读取）传感器。我们把精力放在寄存器地图这个文档即可。
+
+## I2C
+
+MPU9250 是由两个模块（MPU6500+AK8963）组合而成。其中MPU6500可以测量加速度和角加速度（6轴）。AK8963可以测量各个方向磁场数据（3轴）。一共是9轴。
+
+MPU6500的I2C地址为**0x68**。
+
+BMP280的I2C地址为**0x76**。
+
+使用树莓派4B可以用以下指令查询：
+
+```bash
+sudo i2cdetect -y 1 
+# 查询数据 最后一个1的含义指的是树莓派的第二个i2c总线，第一个为0
+sudo i2cdump -y 1 0x68 
+# 后面跟一个地址可查询对应的数据，查询Register Map可以知其具体含义。
+```
+
+## 设备ID
+
+MPU6500的设备ID是\*\* 0x70\*\*。地址为**0x75**。
+
+BMP设备ID是**0x58**，ID地址为**0xD0**。
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_dWLyCaifvhxphkQGKmVv7Y.png)
+
+**可以根据ID判断传感器是否正确连接。**
+
+## 关键数据读取
+
+说明：在读取数据之前，还需要对传感器进行一些参数设定，这个部分可以参考Register Map的提示设定。（比如电源模式，测量精度，FIFO模式等）
+
+### MPU6500：读取加速度数据&换算单位
+
+查询手册，找到关键数据的寄存器地址，如下图：
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_VwKAx3ER7xw73EmBEVeF7.png)
+
+可以知道，测量的数据的起始地址是**0x3B**，分别是ax, ay, az, gx, gy, gz。每一个数据是16位，也就是2个字节，总测量数据长度是12个字节。在终端中，读取数据如下
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_8yv8H8gVaqfUdDfQLiPLqd.png)
+
+利用树莓派的smbus库，可以编写如下代码片段
+
+```python
+def readAccel(self): # 这里以读取加速度为例，角加速度同理
+    data = bus.read_i2c_block_data(self.address, ACCEL_OUT, 6) # 读取六个字节
+    # 这里读取的数据的格式是补码，可以从手册里查询到。
+    x = self.dataConv(data[1], data[0]) # 这里需要按照高位数据在高位的规则左位运算，补码
+    y = self.dataConv(data[3], data[2]) # 同上
+    z = self.dataConv(data[5], data[4]) # 同上
+    
+    x = round(x*self.ares, 3) # 单位换算&四舍五入
+    y = round(y*self.ares, 3) # 同上
+    z = round(z*self.ares, 3) # 同上
+```
+
+\*\*这里的单位换算需要根据测量精度乘以对应数值。\*\*这个地方可以这样理解，传感器就像一把尺子，有单位长度（即测量的最小长度）和量程。一把尺子的刻度的数量是固定的，这里的传感器的刻度数量同样固定，不同的是传感器的单位长度是可调整的，根据 **单位长度x刻度数量 =量程**。 当单位长度变大时，量程也随之变大，但是测量精度会随之下降。反之，量程变小，测量精度提升。
+
+具体代码实现如下：（这里的2G，4G，8G，16G是量程，32768是正刻度数量。）
+
+```python
+if afs == AFS_2G: self.ares = 2.0/32768.0
+elif afs == AFS_4G: self.ares = 4.0/32768.0
+elif afs == AFS_8G: self.ares = 8.0/32768.0
+else: #afs == AFS_16G:
+  self.ares = 16.0/32768.0
+```
+
+### BMP280： 读取温度和气压信息 & 单位换算
+
+具体同上。这里列举一些关键信息如下：
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_jjSnxu9qvMGNTaX8VnRbd2.png)
+
+各个数据段含义：
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_uzujzhw3TTA6piCxCG8Zmv.png)
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_egMkH5oCPtk8ZRkiXtUkHn.png)
+
+测量精度控制：
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_w2MLb2nm7ZW2AuZrGKmdzK.png)
+
+具体换算实例
+
+![](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-03-31/GY91%28MPU9250/image_7x2XbVMQEchtmmNbs2m2fk.png)
+
+## 推荐库
+
+(可直接使用或者少量修改可用)
+
+**Arduino:** [https://github.com/thejmart/GY\_91-.git](https://github.com/thejmart/GY_91-.git "https://github.com/thejmart/GY_91-.git")
+
+**Python:** [https://github.com/qi-xmu/FaBo9AXIS-MPU9250-Python.git](https://github.com/qi-xmu/FaBo9AXIS-MPU9250-Python.git "https://github.com/qi-xmu/FaBo9AXIS-MPU9250-Python.git") 说明：这个库是克隆别人的，使用的是python2，同时只有MPU9250的代码。可以等我的后期更新。
+
+\*\*C/C++: \*\*[https://github.com/ricardozago/GY91-MPU9250-BMP280.git](https://github.com/ricardozago/GY91-MPU9250-BMP280.git "https://github.com/ricardozago/GY91-MPU9250-BMP280.git")

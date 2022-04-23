@@ -1,0 +1,47 @@
+# Flutter 构建windows应用
+
+[Flutter Windows 桌面端支持进入稳定版 | Flutter 中文文档 | Flutter 中文开发者网站](https://flutter.cn/posts/announcing-flutter-for-windows) 
+
+从2.10之后的版本，flutter已经正式支持构建windows应用。不过距离实现全平台构建，还需要考虑很多问题，flutter构建的应用更加适合移动端的使用习惯，如果需要构建windows应用，我的建议是使用一些适合桌面端的widget。
+
+具体方法如下：
+
+## 条件
+
+- 需要安装VS2019或者VS2022，简言之，需要安卓Windows 10 SDK
+- 2.10之前的版本是默认关闭的。Linux和Mac是默认关闭的，可以手动进行打开。
+
+## 方法
+
+### 第一步 打开Windows的平台支持
+
+powershell输入如下指令（如下命令可以使用`flutter config`查看，**2.10以上的版本默认开启**）
+
+```powershell
+flutter config --enable-windows-desktop
+# 其他平台
+flutter config --[no-]enable-macos-desktop
+flutter config --[no-]enable-linux-desktop
+```
+
+可以使用`flutter doctor`查看情况
+
+![image-20220403224901242](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-03/flutter%E6%9E%84%E5%BB%BAwin%E5%BA%94%E7%94%A8/image-20220403224901242.png)
+
+### 第二步 在旧项目中添加Windows平台支持
+
+在项目地址输入如下指令
+
+```power
+flutter create --platforms=windows[,macos,linux] .
+```
+
+### 第三步 构建Windows项目exe
+
+```powershell
+flutter build windows
+```
+
+## 其他说明
+
+项目实例：https://gitee.com/qi_xmu/qmqtt.git

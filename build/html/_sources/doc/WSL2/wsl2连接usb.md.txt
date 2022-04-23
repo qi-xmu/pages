@@ -1,0 +1,70 @@
+# 使用WSL2连接USB设备
+
+[toc]
+
+22.3.19 微软官方文档：[连接 USB 设备 | Microsoft Docs](https://docs.microsoft.com/zh-cn/windows/wsl/connect-usb) 
+
+##  要求
+
+- 运行 Windows 11（内部版本 22000 或更高版本）。 （可提供 Windows 10 支持，请参见下面的注释）
+- Linux 发行版已安装并[设置为 WSL 2](https://docs.microsoft.com/zh-cn/windows/wsl/basic-commands#set-wsl-version-to-1-or-2)。
+- 运行 [Linux 内核 5.10.60.1 或更高版本](https://docs.microsoft.com/zh-cn/windows/wsl/kernel-release-notes)。
+  - 如果内核版本较低，可以使用`wsl --update`进行更新。
+- **只能在默认WSL中使用（可以手动切换默认WSL）**
+
+使用`wsl --status`查询是否符合条件。
+
+![image-20220402203010945](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203010945.png)
+
+## 安装
+
+###  第一步 在Window安装usbipd
+
+使用`winget`安装，`winget`微软推出的包管理工具，也挺好用的。安装方法：[使用 winget 工具安装和管理应用程序 | Microsoft Docs](https://docs.microsoft.com/zh-CN/windows/package-manager/winget/) 
+
+```powershell
+winget install --interactive --exact dorssel.usbipd-win
+```
+
+*注意：如果省略`--interactive`可能会立即重启计算机。*
+
+### 第二步 在WSL里安装USBIP 工具和硬件数据库
+
+在 Ubuntu 上运行以下命令：[其他分发可能需要不同的 usbip 客户端包](https://github.com/dorssel/usbipd-win/wiki/WSL-support#usbip-client-tools)。
+
+```powershell
+sudo apt install linux-tools-5.4.0-77-generic hwdata
+sudo update-alternatives --install /usr/local/bin/usbip usbip /usr/lib/linux-tools/5.4.0-77-generic/usbip 20
+```
+
+## 使用方法
+
+**运行说明：**连接指令需要在管理员条件下运行。
+
+1. 查询所有USB设备
+
+   ```powershell
+   usbipd wsl list
+   ```
+
+   ![image-20220402203247759](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203247759.png)
+
+2. 连接USB设备到**默认WSL**
+
+   切换默认WSL使用`wsl --set-default <Distribution Name>`。使用**管理员模式**执行如下指令：
+
+   ```powershell
+   usbipd wsl attach --busid <BUSID>
+   ```
+
+   `BUSID`是查询结果的第一列。
+
+   ![image-20220402203628235](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203628235.png)
+
+   ![image-20220402203741068](https://quplor-1300340355.cos.ap-guangzhou.myqcloud.com/user/2022-04-02/wsl2%E8%BF%9E%E6%8E%A5usb/image-20220402203741068.png)
+
+3. 断开连接，无需管理员权限。
+
+   ```pow
+   usbipd wsl detach --busid 1-1
+   ```

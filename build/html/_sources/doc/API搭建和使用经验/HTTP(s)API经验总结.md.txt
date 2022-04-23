@@ -1,0 +1,75 @@
+# HTTP(s) API 经验总结
+
+[toc]
+
+## 参考文章
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Overview
+
+## First
+
+​		首先，需要了解HTTP(s)请求，其主要包含那几个重要部分。各个部分具有什么功能。第一个需要了解的URI和URL。URL时URI的子集，这里只需要掌握URL的知识即可。
+
+​		除了URL这个基础之外，http(s)还可以通过Header传递信息，如果不熟悉，可以复习一下http/https报文的结构。Header一般传递一些与传输相关的内容，比如所传输的信息的类型，信息的长度等等（但也不完全是）。在API调用中，这个部分一般用于鉴定请求者的身份，比如token的验证方式。一般在API文件中会详细的规定出请求所需要的参数。
+
+​		除了Header之外，在请求的过程中，另一个中重要的概念就是请求方式了，常见的请求方式有GET，POST。其他的请求方式我们一般来说了解比较少，不过在API请求中，GET和POST的使用相对居多，其他请求方式在一些文件上传和管理中也会涉及部分。
+
+​		一个HTTP(s) API请求的主要是这三个部分：**请求方式，URL，Header**。（按照http/https报文的顺序，本文按照URL，Header，强求方法的顺序来介绍，主要是请求方法相对简单，大家对其相对了解）
+
+## URL
+
+一个完整的URL如下：
+
+```
+protocol://hostname[:port]/path/[;parameters][?query]#fragment
+```
+
+这里面用几个重要的概念：比如 `query`, `fragment`。
+
+- protocol: 协议，这里可以是http/https
+- hostname: 主机地址，也就是服务器地址，这里可以是域名或者IP。
+- path: 资源路径，指的是主机对应资源的地址。不过在api中可以将其视为一个参数，常常可以作为对象路径或者请求方法。
+- parameters: 参数，这是用于指定特殊参数的可选项。这个目前我还没见过。
+- query: 查询，可以向服务器显示的传递参数，一般以`?`开头。多个参数以`&`相连，参数采用键值对，中间以`=`相连。
+- frament: 信息断片，常常出现在各种文档类网站中，用于标记title位置。
+
+除了URL之外，http(s)还可以通过http-header传递信息。
+
+## HTTP(s)-Header
+
+[HTTP header（HTTP 首部） - 术语表 | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP_header) 
+
+​		**HTTP header**（HTTP 首部，HTTP 头）表示在 HTTP 请求或响应中的用来传递附加信息的字段，修改所传递的消息（或者消息主体）的语义，或者使其更加精确。消息首部不区分大小写，开始于一行的开头，后面紧跟着一个 `':'` 和与之相关的值。字段值在一个换行符（CRLF）前或者整个消息的末尾结束。
+
+​		Header可以根据不同的作用分为下面几种类型：
+
+- [General header](https://developer.mozilla.org/zh-CN/docs/Glossary/General_header)：公共头部，可以应用于请求和响应中，但是与在消息主体中的数据无关。
+  - 在请求头和响应都存在。
+  - 最常见的通用首部包括：[`Date`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Date)、[`Cache-Control`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cache-Control) 或 [`Connection`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Connection) 
+- [Request header](https://developer.mozilla.org/zh-CN/docs/Glossary/Request_header)：请求头部，含有与所要获取的资源或者客户端自身相关的附加信息。
+  - 在API中，可以作为验证请求身份的一个标识，用于鉴权。比如token, cookie（少用）。
+  - 用于表明请求方对相应内容的一些要求，比如语言类型，编码方式等。
+- [Response header](https://developer.mozilla.org/zh-CN/docs/Glossary/Response_header)：响应头部，含有与响应相关的附加信息，比如它的位置或者与服务器相关的信息（名称、版本号等）。
+  - 一般是服务器向请求方返回的HTTP的头部信息。
+  - 可以设置cookie。
+- [Entity header](https://developer.mozilla.org/zh-CN/docs/Glossary/Entity_header): 实体头部，含有与消息主体相关的附加信息，比如长度或者MIME类型。
+  - 可以标注返回内容的形式，比如application/json，就是json格式数据。
+  - MIME包含了我们常见的数据形式，包括图像，视频和各类文本形式。
+    - 具体了解：[MIME 类型 - HTTP | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types) 
+
+​		在API请求中，我们在意的一般是Request Header(请求头部)，一般API文档会告诉我们如何设定头部参数，一般用于鉴权和请求内容说明（MIME类型，长度，hash之类)。
+
+## 请求方式
+
+[HTTP 请求方法 - HTTP | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/web/http/methods) 
+
+- [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) : GET方法请求一个指定资源的表示形式，使用GET的请求应该只被用于获取数据。
+- [HEAD](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD) : HEAD方法请求一个与GET请求的响应相同的响应，但没有响应体。
+- [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) : POST方法用于将实体提交到指定的资源，通常导致在服务器上的状态变化或副作用。
+- [PUT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT) : PUT方法用请求有效载荷替换目标资源的所有当前表示。
+- [DELETE](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE) : DELETE方法删除指定的资源。
+- 其他参考： [HTTP 请求方法 - HTTP | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/web/http/methods) 
+
+在API调用时，其实各种方法没有差异，可以理解为是一种人为规定，只需要按照API文档的方法进行请求就可以了。
+
+在设计API时，可以根据功能的需要，选择设置不同的请求方式。
